@@ -1,61 +1,56 @@
 #!/usr/bin/env bash
-
 set -exuo pipefail
 
-mkdir -p $PREFIX/lib/java
-mkdir -p $PREFIX/bin
-cp $SRC_DIR/toolsUI-$PKG_VERSION.jar $PREFIX/lib/java/toolsUI.jar
+mkdir -p "$PREFIX/lib/java" "$PREFIX/bin"
+cp "$SRC_DIR/toolsUI-$PKG_VERSION.jar" "$PREFIX/lib/java/toolsUI.jar"
 
-cat <<EOF >${PREFIX}/bin/ncj-toolsui
-#!/usr/bin/env bash
-java -Xms512m -Xmx4g \$JAVA_OPTS -cp $PREFIX/lib/java/toolsUI.jar ucar.nc2.ui.ToolsUI "\$@"
-EOF
-chmod +x ${PREFIX}/bin/ncj-toolsui
+# --------------------------------------------------------------------------
+# Launchers
+# --------------------------------------------------------------------------
 
-cat <<EOF >${PREFIX}/bin/ncj-nccopy
+# write_unix_launcher <file> <main-class>
+write_unix_launcher() {
+  local file="$1" main="$2"
+  local out="${PREFIX}/bin/${file}"
+  cat <<EOF > "${out}"
 #!/usr/bin/env bash
-java -Xms512m -Xmx4g \$JAVA_OPTS -cp $PREFIX/lib/java/toolsUI.jar ucar.nc2.write.Nccopy "\$@"
+set -euo pipefail
+JAR="\${CONDA_PREFIX}/lib/java/toolsUI.jar"
+exec java -Xms512m -Xmx4g \${JAVA_OPTS:-} -cp "\$JAR" ${main} "\$@"
 EOF
-chmod +x ${PREFIX}/bin/ncj-nccopy
+  chmod +x "${out}"
+}
 
-cat <<EOF >${PREFIX}/bin/ncj-ncdump
-#!/usr/bin/env bash
-java -Xms512m -Xmx4g \$JAVA_OPTS -cp $PREFIX/lib/java/toolsUI.jar ucar.nc2.NCdumpW "\$@"
+# write_windows_launcher <file> <main-class>  (adds .bat)
+write_windows_launcher() {
+  local file="$1" main="$2"
+  local out="${PREFIX}/bin/${file}.bat"
+  cat <<EOF > "${out}"
+@echo off
+setlocal
+set "JAR=%CONDA_PREFIX%\lib\java\toolsUI.jar"
+java -Xms512m -Xmx4g %JAVA_OPTS% -cp "%JAR%" ${main} %*
+exit /b %ERRORLEVEL%
 EOF
-chmod +x ${PREFIX}/bin/ncj-ncdump
+  unix2dos "${out}"
+}
 
-cat <<EOF >${PREFIX}/bin/ncj-nccompare
-#!/usr/bin/env bash
-java -Xms512m -Xmx4g \$JAVA_OPTS -cp $PREFIX/lib/java/toolsUI.jar ucar.nc2.util.CompareNetcdf2 "\$@"
-EOF
-chmod +x ${PREFIX}/bin/ncj-nccompare
+# write_launcher <file> <main-class>  -> emits Unix + Windows launchers
+write_launcher() {
+  write_unix_launcher "$1" "$2"
+  write_windows_launcher "$1" "$2"
+}
 
-cat <<EOF >${PREFIX}/bin/ncj-bufrspliter
-#!/usr/bin/env bash
-java -Xms512m -Xmx4g \$JAVA_OPTS -cp $PREFIX/lib/java/toolsUI.jar ucar.nc2.iosp.bufr.writer.BufrSplitter "\$@"
-EOF
-chmod +x ${PREFIX}/bin/ncj-bufrspliter
-
-cat <<EOF >${PREFIX}/bin/ncj-cfpointwriter
-#!/usr/bin/env bash
-java -Xms512m -Xmx4g \$JAVA_OPTS -cp $PREFIX/lib/java/toolsUI.jar ucar.nc2.ft.point.writer.CFPointWriter "\$@"
-EOF
-chmod +x ${PREFIX}/bin/ncj-cfpointwriter
-
-cat <<EOF >${PREFIX}/bin/ncj-gribcdmindex
-#!/usr/bin/env bash
-java -Xms512m -Xmx4g \$JAVA_OPTS -cp $PREFIX/lib/java/toolsUI.jar ucar.nc2.grib.collection.GribCdmIndex "\$@"
-EOF
-chmod +x ${PREFIX}/bin/ncj-gribcdmindex
-
-cat <<EOF >${PREFIX}/bin/ncj-featurescan
-#!/usr/bin/env bash
-java -Xms512m -Xmx4g \$JAVA_OPTS -cp $PREFIX/lib/java/toolsUI.jar ucar.nc2.ft2.scan.FeatureScan "\$@"
-EOF
-chmod +x ${PREFIX}/bin/ncj-featurescan
-
-cat <<EOF >${PREFIX}/bin/ncj-catalogcrawler
-#!/usr/bin/env bash
-java -Xms512m -Xmx4g \$JAVA_OPTS -cp $PREFIX/lib/java/toolsUI.jar thredds.client.catalog.tools.CatalogCrawler "\$@"
-EOF
-chmod +x ${PREFIX}/bin/ncj-catalogcrawler
+# --------------------------------------------------------------------------
+# Create launchers
+# --------------------------------------------------------------------------
+write_launcher ncj-toolsui        ucar.nc2.ui.ToolsUI
+# netCDF-Java tools
+write_launcher ncj-nccopy         ucar.nc2.write.Nccopy
+write_launcher ncj-ncdump         ucar.nc2.NCdumpW
+write_launcher ncj-nccompare      ucar.nc2.util.CompareNetcdf2
+write_launcher ncj-bufrsplitter   ucar.nc2.iosp.bufr.writer.BufrSplitter
+write_launcher ncj-cfpointwriter  ucar.nc2.ft.point.writer.CFPointWriter
+write_launcher ncj-gribcdmindex   ucar.nc2.grib.collection.GribCdmIndex
+write_launcher ncj-featurescan    ucar.nc2.ft2.scan.FeatureScan
+write_launcher ncj-catalogcrawler thredds.client.catalog.tools.CatalogCrawler
