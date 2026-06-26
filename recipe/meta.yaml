@@ -1,5 +1,5 @@
 {% set name = "netcdf-java" %}
-{% set version = "5.9.1.1" %}
+{% set version = "5.10.0" %}
 
 package:
   name: {{ name|lower }}
@@ -7,9 +7,9 @@ package:
 
 source:
   url: 
-    - https://downloads.unidata.ucar.edu/{{ name }}/{{ version }}/toolsUI-{{ version }}.jar
     - https://github.com/Unidata/netcdf-java/releases/download/v{{ version }}/toolsUI-{{ version }}.jar
-  sha256: f4a54a7eb6ab2f47edd030457c41557b25498a8706b1a4843d2a38cfa191061e
+    - https://downloads.unidata.ucar.edu/{{ name }}/{{ version }}/toolsUI-{{ version }}.jar
+  sha256: e2ffd059e25ad9a748475a8f302f440da21d9b09c3d8d75f241a37421ecf5765
 
 build:
   number: 0
@@ -23,8 +23,9 @@ requirements:
 
 test:
   commands:
-    - test -f $PREFIX/bin/ncj-toolsui            # [unix]
-    - if exist %SCRIPT%\ncj-toolsui.bat exit 1   # [win]
+    - test -f $PREFIX/bin/ncj-toolsui                   # [unix]
+    - test -f $PREFIX/bin/ncj-toolsui.bat               # [unix]
+    - if not exist %PREFIX%\bin\ncj-toolsui.bat exit 1  # [win]
     - ncj-ncdump
     - ncj-nccopy
     - ncj-nccompare
