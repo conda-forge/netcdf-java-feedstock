@@ -42,12 +42,16 @@ tests:
       - ncj-catalogcrawler
 
 about:
-  summary: The Unidata netcdf-java library. The toolsUI.jar contains everything to run the ToolsUI application directly from it.
+  summary: The Unidata netCDF-Java library, ToolsUI application, and command-line tools.
   license: BSD-3-Clause
   license_file: LICENSE
   homepage: https://www.unidata.ucar.edu/software/netcdf-java/
   repository: https://github.com/unidata/netcdf-java
   documentation: https://docs.unidata.ucar.edu/netcdf-java/current/userguide/index.html
+  description: | 
+    NetCDF-Java provides access to scientific data formats including
+    netCDF, HDF, GRIB, BUFR, and others. This package installs the
+    ToolsUI uber-JAR and command-line launchers for several netCDF-Java tools.
 
 extra:
   recipe-maintainers:
