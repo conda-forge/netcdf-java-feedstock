@@ -1,0 +1,59 @@
+schema_version: 1
+
+context:
+  name: netcdf-java
+  version: "5.11.0"
+
+package:
+  name: ${{ name|lower }}
+  version: ${{ version }}
+
+source:
+  url:
+    - https://github.com/Unidata/netcdf-java/releases/download/${{ version }}/toolsUI-${{ version }}.jar
+    - https://downloads.unidata.ucar.edu/${{ name }}/${{ version }}/toolsUI-${{ version }}.jar
+  sha256: 3c24870dbad05f25b3c08dbb77397048abd8477497811032d5fa141647c7e29c
+
+build:
+  number: 0
+  noarch: generic
+
+requirements:
+  build:
+    - dos2unix
+  run:
+    - openjdk >=8
+
+tests:
+  - script:
+      - if: unix
+        then: test -f $PREFIX/bin/ncj-toolsui
+      - if: unix
+        then: test -f $PREFIX/bin/ncj-toolsui.bat
+      - if: win
+        then: if not exist %PREFIX%\bin\ncj-toolsui.bat exit 1
+      - ncj-ncdump
+      - ncj-nccopy
+      - ncj-nccompare
+      - ncj-bufrsplitter
+      - ncj-cfpointwriter
+      - ncj-gribcdmindex
+      - ncj-featurescan
+      - ncj-catalogcrawler
+
+about:
+  summary: The Unidata netCDF-Java library, ToolsUI application, and command-line tools.
+  license: BSD-3-Clause
+  license_file: LICENSE
+  homepage: https://www.unidata.ucar.edu/software/netcdf-java/
+  repository: https://github.com/unidata/netcdf-java
+  documentation: https://docs.unidata.ucar.edu/netcdf-java/current/userguide/index.html
+  description: | 
+    NetCDF-Java provides access to scientific data formats including
+    netCDF, HDF, GRIB, BUFR, and others. This package installs the
+    ToolsUI uber-JAR and command-line launchers for several netCDF-Java tools.
+
+extra:
+  recipe-maintainers:
+    - cofinoa
+    - lesserwhirls
